@@ -25,18 +25,18 @@ jobs:
                     --health-retries=10
 
             redis:
-                image: redis:7-alpine
+                image: redis:8.2-alpine
                 ports:
                     - 6379:6379
                 options: >-
-                    --health-cmd="redis-cli ping || exit 1"
-                    --health-interval=5s
-                    --health-timeout=3s
-                    --health-retries=10
+                    --health-cmd "redis-cli ping"
+                    --health-interval 10s
+                    --health-timeout 5s
+                    --health-retries 5
 
         env:
             # NODE_ENV: test
-            DATABASE_URL: postgres://postgres:postgres@localhost:5432/app_test
+            DATABASE_URL: postgres://postgres:postgres@localhost:5432/app_test?schema=public
             REDIS_URL: redis://localhost:6379
 
         strategy:
@@ -64,32 +64,5 @@ jobs:
               run: |
                   echo "Running DB migrations..."
                   pnpm prisma:migrate || echo "No migrations step defined"
-
-            - name: Wait for Postgres
-              run: |
-                  for i in {1..30}; do
-                    if pg_isready -h localhost -p 5432 -U postgres -d app_test; then
-                      echo "Postgres is ready"
-                      exit 0
-                    fi
-                    echo "Waiting for Postgres..."
-                    sleep 2
-                  done
-                  echo "Postgres did not become ready in time"
-                  exit 1
-
-            - name: Wait for Redis
-              run: |
-                  for i in {1..30}; do
-                    if redis-cli -h localhost -p 6379 ping | grep -q PONG; then
-                      echo "Redis is ready"
-                      exit 0
-                    fi
-                    echo "Waiting for Redis..."
-                    sleep 2
-                  done
-                  echo "Redis did not become ready in time"
-                  exit 1
-
             - name: Run tests
               run: pnpm test
