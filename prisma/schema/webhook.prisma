@@ -1,0 +1,33 @@
+enum rawDataProcessStatus {
+    PENDING
+    ON_QUEUE
+    PROCESSING
+    DONE
+    CANCELLED
+}
+
+model dataSourceConfiguration {
+    id             String          @id @db.Uuid
+    source         String
+    endpoint       String
+    username       String?
+    password       String?
+    apiKey         String?         @map("api_key")
+    createdAt      DateTime        @default(now()) @map("created_at")
+    updatedAt      DateTime        @updatedAt @map("updated_at")
+    datasourceRaws datasourceRaw[]
+
+    @@unique([source, endpoint])
+    @@map("data_source_configurations")
+}
+
+model datasourceRaw {
+    id        String                  @id
+    status    rawDataProcessStatus
+    sourceId  String                  @map("source_id") @db.Uuid
+    source    dataSourceConfiguration @relation(fields: [sourceId], references: [id])
+    raw       Json                    @db.JsonB
+    createdAt DateTime                @default(now()) @map("created_at")
+
+    @@map("data_source_raw")
+}
