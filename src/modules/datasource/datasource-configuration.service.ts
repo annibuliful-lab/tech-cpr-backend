@@ -1,7 +1,9 @@
+import { Injectable } from '@nestjs/common';
 import { Prisma } from 'src/generated/prisma/client';
 import { PrismaService } from 'src/prisma.service';
 
-export class DataSourceRepository {
+@Injectable()
+export class DataSourceConfigurationService {
   constructor(private prisma: PrismaService) {}
 
   create(input: Prisma.dataSourceConfigurationCreateInput) {
