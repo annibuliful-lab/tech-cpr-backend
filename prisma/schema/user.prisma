@@ -1,0 +1,62 @@
+enum AuthProvider {
+    GUEST
+    LOCAL // email & password
+    GOOGLE
+    LINE
+    FACEBOOK
+}
+
+enum UserStatus {
+    ACTIVE
+    INACTIVE
+}
+
+enum RoleCode {
+    RESIDENT // ผู้ประสบภัย / คนในพื้นที่เสี่ยง
+    FIELD_TEAM // ทีมภาคสนาม / อาสา / ศูนย์อพยพ
+    COORDINATOR // ผู้ประสานงาน, ศูนย์รับบริจาค, มูลนิธิ
+    ADMIN // แอดมินระบบ
+}
+
+model User {
+    id                  String               @id @default(uuid())
+    email               String?              @unique
+    phoneNumber         String?              @map("phone_number")
+    authProvider        AuthProvider         @default(GUEST) @map("auth_provider")
+    providerUserId      String?              @map("provider_user_id") // auth token id from Google, Line, etc
+    passwordHash        String?              @map("password_hash")
+    displayName         String?              @map("display_name")
+    firstName           String?              @map("first_name")
+    lastName            String?              @map("last_name")
+    status              UserStatus           @default(ACTIVE)
+    createdAt           DateTime             @default(now()) @map("created_at")
+    updatedAt           DateTime             @updatedAt @map("updated_at")
+    userRoles           UserRole[]
+    organizationMembers OrganizationMember[]
+
+    @@map("users")
+}
+
+model Role {
+    id          String     @id @default(uuid())
+    code        RoleCode   @unique
+    name        String
+    description String?
+    users       UserRole[]
+    createdAt   DateTime   @default(now()) @map("created_at")
+    updatedAt   DateTime   @updatedAt @map("updated_at")
+
+    @@map("roles")
+}
+
+// Pivot table: User <-> Role
+model UserRole {
+    userId     String   @map("user_id")
+    roleId     String   @map("role_id")
+    user       User     @relation(fields: [userId], references: [id])
+    role       Role     @relation(fields: [roleId], references: [id])
+    assignedAt DateTime @default(now()) @map("assigned_at")
+
+    @@id([userId, roleId])
+    @@map("user_roles")
+}

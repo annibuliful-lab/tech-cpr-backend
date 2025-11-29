@@ -1,0 +1,45 @@
+model Organization {
+    id             String                     @id @default(uuid())
+    name           String
+    description    String?
+    mainLocationId String?                    @map("main_location_id")
+    mainLocation   Location?                  @relation(fields: [mainLocationId], references: [id])
+    contactPhone   String?                    @map("contact_phone")
+    contactEmail   String?                    @map("contact_email")
+    websiteUrl     String?                    @map("website_url")
+    members        OrganizationMember[]
+    coverageAreas  OrganizationCoverageArea[]
+    createdAt      DateTime                   @default(now()) @map("created_at")
+    updatedAt      DateTime                   @updatedAt @map("updated_at")
+
+    @@map("organizations")
+}
+
+model OrganizationMember {
+    id             String       @id @default(uuid())
+    organizationId String       @map("organization_id")
+    userId         String       @map("user_id")
+    roleInOrg      String?      @map("role_in_org") // eg. leader, coordinator
+    isActive       Boolean      @default(true) @map("is_active")
+    organization   Organization @relation(fields: [organizationId], references: [id])
+    user           User         @relation(fields: [userId], references: [id])
+    createdAt      DateTime     @default(now()) @map("created_at")
+    updatedAt      DateTime     @updatedAt @map("updated_at")
+
+    @@unique([organizationId, userId])
+    @@map("organization_members")
+}
+
+model OrganizationCoverageArea {
+    id             String       @id @default(uuid())
+    organizationId String       @map("organization_id")
+    locationId     String       @map("location_id")
+    description    String?
+    organization   Organization @relation(fields: [organizationId], references: [id])
+    location       Location     @relation(fields: [locationId], references: [id])
+    createdAt      DateTime     @default(now()) @map("created_at")
+    updatedAt      DateTime     @updatedAt @map("updated_at")
+
+    @@unique([organizationId, locationId])
+    @@map("organization_coverage_areas")
+}

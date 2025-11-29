@@ -1,0 +1,19 @@
+model Location {
+    id                        String                     @id @default(uuid())
+    name                      String
+    code                      String?                    @unique // เช่น รหัสจังหวัด / อำเภอ / โซน
+    parentId                  String?                    @map("parent_id")
+    parent                    Location?                  @relation("LocationParent", fields: [parentId], references: [id])
+    children                  Location[]                 @relation("LocationParent")
+    // --- geospatial data ---
+    latitude                  Float?                     @map("latitude")
+    longitude                 Float?                     @map("longitude")
+    altitude                  Float?                     @map("altitude") // optional
+    boundingBox               Json?                      @map("bounding_box") // polygon, bbox of area
+    createdAt                 DateTime                   @default(now()) @map("created_at")
+    updatedAt                 DateTime                   @updatedAt @map("updated_at")
+    organizations             Organization[]
+    organizationCoverageAreas OrganizationCoverageArea[]
+
+    @@map("locations")
+}
